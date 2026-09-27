@@ -1,0 +1,249 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Jipange</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<h1>Jipange</h1>
+
+<p>Give every shilling a purpose.</p>
+
+<div>
+    <h2>Your Money</h2>
+    <h3>KSh {{ "{:,.0f}".format(total_balance) }}</h3>
+    <p>Total mobile money balance</p>
+</div>
+
+<div>
+    <h2>Committed</h2>
+    <h3>KSh {{ "{:,.0f}".format(committed_balance) }}</h3>
+</div>
+
+<div>
+    <h2>Flexible</h2>
+    <h3>KSh {{ "{:,.0f}".format(flexible_balance) }}</h3>
+</div>
+<h2>Your Portfolios</h2>
+
+<div class="portfolio-grid">
+
+    {% for portfolio in portfolios %}
+
+    <div class="portfolio-card">
+
+        <h3>{{ portfolio["name"] }}</h3>
+
+        <p>
+            KSh {{ "{:,.0f}".format(portfolio["balance"]) }}
+        </p>
+
+        <small>Available to spend</small>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+<h2>Create Portfolio</h2>
+
+<form action="/add-portfolio" method="POST">
+
+    <label>Portfolio Name</label>
+
+    <input
+        type="text"
+        name="name"
+        placeholder="Example: School Fees"
+        required
+    >
+
+    <br><br>
+
+    <label>Starting Amount</label>
+
+    <input
+        type="number"
+        name="balance"
+        placeholder="10000"
+        min="0"
+        step="0.01"
+        required
+    >
+
+    <br><br>
+
+    <button type="submit">
+        Create Portfolio
+    </button>
+
+</form>
+
+<h2>Allocate Money</h2>
+
+<p>
+    Move money from your Flexible balance into a portfolio.
+</p>
+
+<form action="/allocate-money" method="POST">
+
+    <label>Portfolio</label>
+
+    <select name="category" required>
+
+        {% for portfolio in portfolios %}
+
+            {% if portfolio["name"] != "Flexible" %}
+
+            <option value="{{ portfolio['name'] }}">
+                {{ portfolio["name"] }}
+            </option>
+
+            {% endif %}
+
+        {% endfor %}
+
+    </select>
+
+    <br><br>
+
+    <label>Amount</label>
+
+    <input
+        type="number"
+        name="amount"
+        min="1"
+        step="0.01"
+        placeholder="5000"
+        required
+    >
+
+    <br><br>
+
+    <button type="submit">
+        Allocate Money
+    </button>
+
+</form>
+
+<h2>Add Transaction</h2>
+
+<form action="/add-transaction" method="POST">
+
+    <label>Description</label>
+
+    <input
+        type="text"
+        name="description"
+        placeholder="Example: Groceries"
+        required
+    >
+
+    <br><br>
+
+    <label>Amount</label>
+
+    <input
+        type="number"
+        name="amount"
+        placeholder="2000"
+        min="1"
+        step="0.01"
+        required
+    >
+
+    <br><br>
+
+    <label>Portfolio</label>
+
+   <select name="category" required>
+
+    {% for portfolio in portfolios %}
+
+    <option value="{{ portfolio['name'] }}">
+        {{ portfolio["name"] }}
+    </option>
+
+    {% endfor %}
+
+    </select>
+
+    <br><br>
+
+    <button type="submit">
+        Add Transaction
+    </button>
+
+</form>
+
+<h2>Recent Transactions</h2>
+
+{% if transactions %}
+
+    {% for transaction in transactions %}
+
+    <div class="transaction">
+
+        <strong>
+            {{ transaction.description }}
+        </strong>
+
+        <p>
+            {{ transaction.category }}
+            —
+            KSh {{ "{:,.0f}".format(transaction.amount) }}
+        </p>
+
+    </div>
+
+    {% endfor %}
+
+{% else %}
+
+    <p>No transactions yet.</p>
+
+{% endif %}
+
+<h2>✨ Jipange AI</h2>
+
+<p>
+    Describe a transaction and Jipange AI will suggest
+    the most appropriate budget portfolio.
+</p>
+
+<form action="/ai-category" method="POST">
+
+    <input
+        type="text"
+        name="ai_description"
+        placeholder="Example: Bought groceries at Naivas for KSh 2,000"
+        required
+    >
+
+    <br><br>
+
+    <button type="submit">
+        Ask Jipange AI
+    </button>
+
+</form>
+
+{% if ai_suggestion %}
+
+<div class="ai-result">
+
+    <h3>AI Suggestion</h3>
+
+    <p>
+        "{{ ai_description }}"
+    </p>
+
+    <strong>
+        Suggested Portfolio: {{ ai_suggestion }}
+    </strong>
+
+</div>
+
+{% endif %}
